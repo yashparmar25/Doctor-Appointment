@@ -3,6 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import validator from "validator";
 import jwt from "jsonwebtoken";
+import appointmentModel from "../models/appointmentModel.js";
 
 // API for adding doctor
 const addDoctor = async (req, res) => {
@@ -102,5 +103,37 @@ const loginAdmin = async (req, res) => {
     }
  }
 
+ const appointmentsAdmin = async (req,res)=>{
+    try {
+        const appointments = await appointmentModel.find({})
+        res.json({success:true,appointments})
+    } catch (error) {
+        console.log(error);
+        res.json({success:false,message:error.message})
+    }
+ }
+ //api for appointment cancel
+ const appointmentCancel = async (req, res) => {
+    try {
+        const {appointmentId } = req.body;
+        const appointmentData = await appointmentModel.findById(appointmentId);
+       
+        await appointmentModel.findByIdAndDelete(appointmentId, { cancelled: true });
+        //release doctos slot
+        const { docId, slotDate, slotTime } = appointmentData
+        const doctorData = await doctorModel.findById(docId);
 
-export { addDoctor, loginAdmin,allDoctors };
+        let slots_booked = doctorData.slots_booked;
+        slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime);
+        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+        return res.json({ success: true, message: "Appointment cancelled successfully" });
+
+    } catch (error) {
+        console.error("Error fetching appointments:", error);
+        res.status(500).json({ success: false, message: "Server error, please try again later" });
+    }
+}
+
+
+export { addDoctor, loginAdmin,allDoctors,appointmentsAdmin, appointmentCancel };

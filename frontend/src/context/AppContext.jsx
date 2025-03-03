@@ -17,7 +17,7 @@ const AppContextProvider = (props) => {
     const getDoctorsData = async () => {
         try {
             const {data} =  await axios.get(backendUrl+'/api/doctor/list')
-            console.log(backendUrl)
+            
             if(data.success){
                 setDoctors(data.doctors)
                 toast.success(doctors)
@@ -36,9 +36,7 @@ const AppContextProvider = (props) => {
     
         try {
             const response = await axios.get(`${backendUrl}/api/user/get-profile`, { headers: { token } });
-            console.log("🔍 Full API Response:", response); // ✅ Log full response
-    
-            // Extract data safely
+            
             const data = response?.data;
     
             if (data?.success && data?.user) {
@@ -75,7 +73,7 @@ const AppContextProvider = (props) => {
     }, []);
     
     useEffect(() => {
-        console.log("Doctors State Updated:", doctors); 
+       
     }, [doctors]); 
      
     useEffect(() => {

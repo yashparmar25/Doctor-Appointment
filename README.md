@@ -1,4 +1,4 @@
-All three folder download nude_module
+All three folder download node_modules
 
 frondtend and admin folder .env  :
 

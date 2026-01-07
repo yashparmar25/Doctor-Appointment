@@ -1,0 +1,14 @@
+# frontend/Dockerfile.frontend
+FROM node:18
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Expose port (change if you're using Vite/Next.js)
+EXPOSE 5173
+
+# Start dev server
+CMD ["npm", "run", "dev", "--", "--host"]

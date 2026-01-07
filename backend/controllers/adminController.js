@@ -120,7 +120,7 @@ const loginAdmin = async (req, res) => {
         const appointmentData = await appointmentModel.findById(appointmentId);
        
         await appointmentModel.findByIdAndDelete(appointmentId, { cancelled: true });
-        //release doctos slot
+        //release doctors slot
         const { docId, slotDate, slotTime } = appointmentData
         const doctorData = await doctorModel.findById(docId);
 

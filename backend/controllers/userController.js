@@ -31,10 +31,10 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new userModel({ name, email, password: hashedPassword });
 
-        // ✅ Ensure save() completes before proceeding
+        
         await newUser.save();
 
-        // ✅ Fetch user again to ensure it's saved
+        
         const savedUser = await userModel.findOne({ email });
 
         if (!savedUser) {
@@ -144,9 +144,6 @@ const updateProfile = async (req, res) => {
 const bookAppointment = async (req, res) => {
     try {
         const { userId, docId, slotDate, slotTime } = req.body;
-
-
-
         // Fetch doctor details
         const docData = await doctorModel.findById(docId).select("-password");
 
@@ -173,7 +170,7 @@ const bookAppointment = async (req, res) => {
 
 
         // Save appointment
-        const appointmentData = new appointmentModel({
+        const appointmentData = {
             userId,
             docId,
             slotDate,
@@ -182,7 +179,7 @@ const bookAppointment = async (req, res) => {
             docData,
             amount: docData.fees,
             date: Date.now(),
-        });
+        };
 
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();

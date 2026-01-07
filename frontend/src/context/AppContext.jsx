@@ -43,7 +43,7 @@ const AppContextProvider = (props) => {
                 setUserData(data.user);
                 toast.success("User data successfully loaded");
             } else {
-                console.error("❌ Invalid API response structure:", data);
+                console.error("Invalid API response structure:", data);
                 toast.error("Invalid response structure");
             }
         } catch (error) {

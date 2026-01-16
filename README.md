@@ -85,17 +85,24 @@ npm run dev
 
 📸 Screenshots
 User Panel 
+<img width="1908" height="875" alt="image" src="https://github.com/user-attachments/assets/f7218063-d895-455f-8fb2-72f6bf4e16d6" />
+<img width="1890" height="869" alt="image-1" src="https://github.com/user-attachments/assets/4e07b2d3-996e-4daf-b5f6-08133c121317" />
+<img width="1896" height="858" alt="image-2" src="https://github.com/user-attachments/assets/130634dd-0ef4-4560-a5cf-13ddec654a4c" />
+<img width="1852" height="843" alt="image-3" src="https://github.com/user-attachments/assets/3d02ac7c-a93d-41ed-b5ad-aee940268a81" />
+<img width="1821" height="855" alt="image-4" src="https://github.com/user-attachments/assets/ebcf021d-5e9a-4f61-9bf9-80dff61be334" />
 
-![alt text](image.png)
-![alt text](image-1.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
-![alt text](image-4.png)
 
 Admin Panel
+<img width="1900" height="873" alt="image-5" src="https://github.com/user-attachments/assets/316cdd1c-a1b7-49c3-b5fb-8d4d6f231c26" />
+<img width="1890" height="858" alt="image-6" src="https://github.com/user-attachments/assets/477cbf13-97ba-45e4-bfe0-4a57efc5a68b" />
 
-![alt text](image-5.png)
-![alt text](image-6.png)
+Doctor Panel
+
+<img width="1903" height="868" alt="image" src="https://github.com/user-attachments/assets/ea7a70a0-c7bb-4341-8053-15d918c49638" />
+<img width="1883" height="857" alt="image" src="https://github.com/user-attachments/assets/4f888dd8-d23f-4ef0-bbcf-76ac738d4896" />
+
+
+
 
 🔐 Security
 

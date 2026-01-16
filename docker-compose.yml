@@ -1,33 +1,75 @@
+version: "3.8"
+
 services:
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
+    container_name: frontend_app
     ports:
       - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev -- --host
+    depends_on:
+      - backend
+    restart: always
+
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
+    container_name: backend_api
     ports:
-      - "8082:4000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm start
+      - "4000:4000"
+    env_file:
+    - ./backend/.env
+    restart: always
+
 
   admin:
     build:
       context: ./admin
       dockerfile: Dockerfile.admin
+    container_name: admin_panel
     ports:
       - "5174:5174"
-    volumes:
-      - ./admin:/app
-      - /app/node_modules
-    command: npm run dev -- --host
+    depends_on:
+      - backend
+    restart: always
+
+
+
+
+# services:
+#   frontend:
+#     build:
+#       context: ./frontend
+#       dockerfile: Dockerfile.frontend
+#     ports:
+#       - "5173:5173"
+#     volumes:
+#       - ./frontend:/app
+#       - /app/node_modules
+#     command: npm run dev -- --host
+
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile.backend
+#     ports:
+#       - "8082:4000"
+#     volumes:
+#       - ./backend:/app
+#       - /app/node_modules
+#     command: npm start
+
+#   admin:
+#     build:
+#       context: ./admin
+#       dockerfile: Dockerfile.admin
+#     ports:
+#       - "5174:5174"
+#     volumes:
+#       - ./admin:/app
+#       - /app/node_modules
+#     command: npm run dev -- --host

@@ -14,8 +14,8 @@ doctor-appointment/
 └── README.md
 
 🚀 Features
-👨‍⚕️ User
 
+--------------------------------👨‍⚕️ User------------------------------------
 Register & Login
 
 View doctors
@@ -24,7 +24,7 @@ Book appointments
 
 Appointment history
 
-🛠 Admin
+--------------------------------🛠 Admin------------------------------------
 
 Secure admin login
 

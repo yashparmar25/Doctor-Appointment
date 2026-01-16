@@ -4,7 +4,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend 
       dockerfile: Dockerfile.frontend
     container_name: frontend_app
     ports:
@@ -37,39 +37,3 @@ services:
       - backend
     restart: always
 
-
-
-
-# services:
-#   frontend:
-#     build:
-#       context: ./frontend
-#       dockerfile: Dockerfile.frontend
-#     ports:
-#       - "5173:5173"
-#     volumes:
-#       - ./frontend:/app
-#       - /app/node_modules
-#     command: npm run dev -- --host
-
-#   backend:
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile.backend
-#     ports:
-#       - "8082:4000"
-#     volumes:
-#       - ./backend:/app
-#       - /app/node_modules
-#     command: npm start
-
-#   admin:
-#     build:
-#       context: ./admin
-#       dockerfile: Dockerfile.admin
-#     ports:
-#       - "5174:5174"
-#     volumes:
-#       - ./admin:/app
-#       - /app/node_modules
-#     command: npm run dev -- --host

@@ -20,113 +20,132 @@ const Dashboard = () => {
 
   const data = dashData.dashData; // Extracting actual dashboard data
 
-  return (
-    <div className='m-5'>
-      <div className='flex flex-wrap gap-3'>
-        <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all'>
-          <img src={assets.doctor_icon} alt="" />
-          <div>
-            <p className='text-xl font-semibold text-gray-600'>{data.doctors}</p>
-            <p className='text-gray-400'>Doctors</p>
-          </div>
-        </div>
+ return (
+  <div className="p-6 bg-gray-50 min-h-screen w-full">
 
-        <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all'>
-          <img src={assets.appointment_icon} alt="" />
-          <div>
-            <p className='text-xl font-semibold text-gray-600'>{data.appointments}</p>
-            <p className='text-gray-400'>Appointments</p>
-          </div>
-        </div>
+    {/* Header */}
+    <div className="flex justify-between items-center mb-8">
+      <h2 className="text-2xl font-bold text-gray-800">
+        Dashboard Overview
+      </h2>
+      
+    </div>
 
-        <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all'>
-          <img src={assets.patients_icon} alt="" />
+    {/* Stats */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+
+      <div className="bg-white p-6 rounded-2xl shadow 
+      hover:shadow-xl transition w-full">
+
+        <div className="flex items-center gap-4">
+          <img src={assets.doctor_icon} className="w-12" />
           <div>
-            <p className='text-xl font-semibold text-gray-600'>{data.patients}</p>
-            <p className='text-gray-400'>Patients</p>
+            <p className="text-3xl font-bold text-gray-800">
+              {data.doctors}
+            </p>
+            <p className="text-gray-400">
+              Doctors
+            </p>
           </div>
         </div>
       </div>
 
-      <div className='bg-white'>
-        <div className='flex items-center gap-2.5 px-4 py-4 mt-10 rounded-t border'>
-          <img src={assets.list_icon} alt="" />
-          <p className='font-semibold'>Latest Booking</p>
+      <div className="bg-white p-6 rounded-2xl shadow 
+      hover:shadow-xl transition w-full">
+
+        <div className="flex items-center gap-4">
+          <img src={assets.appointment_icon} className="w-12" />
+          <div>
+            <p className="text-3xl font-bold text-gray-800">
+              {data.appointments}
+            </p>
+            <p className="text-gray-400">
+              Appointments
+            </p>
+          </div>
         </div>
-        <div className='pt-4 border border-t-0'>
-          {data.latestAppointments.map((appointment, index) => (
-            <div key={index} className="flex items-center px-6 py-3 gap-3">
-              <img src={appointment.docData.image} alt="" className="w-10 rounded-full" />
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl shadow 
+      hover:shadow-xl transition w-full">
+
+        <div className="flex items-center gap-4">
+          <img src={assets.patients_icon} className="w-12" />
+          <div>
+            <p className="text-3xl font-bold text-gray-800">
+              {data.patients}
+            </p>
+            <p className="text-gray-400">
+              Patients
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {/* Table Section */}
+    <div className="bg-white rounded-2xl shadow border w-full">
+
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <p className="font-semibold text-gray-800 text-lg">
+          Latest Bookings
+        </p>
+        <span className="text-sm text-gray-400">
+          {data.latestAppointments.length} Records
+        </span>
+      </div>
+
+      <div className="divide-y">
+
+        {data.latestAppointments.map((appointment, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between
+            px-6 py-4 hover:bg-gray-50 transition"
+          >
+
+            <div className="flex items-center gap-4">
+              <img
+                src={appointment.docData.image}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+
               <div>
-                <p className="text-gray-800 font-medium">{appointment.docData.name}</p>
-                <p className="text-gray-800">{slotDateFormate(appointment.slotDate)}</p>
+                <p className="font-semibold text-gray-800">
+                  {appointment.docData.name}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {slotDateFormate(appointment.slotDate)}
+                </p>
               </div>
-              {appointment.cancelled ? (
-                <p className="text-red-400 text-xs font-medium">Cancelled</p>
-              ) : (
-                <img 
-                  onClick={() => cancelAppointment(appointment._id)} 
-                  className="w-10 cursor-pointer ml-auto" 
-                  src={assets.cancel_icon} 
-                  alt="Cancel" 
-                />
-              )}
             </div>
-          ))}
-        </div>
+
+            {appointment.cancelled ? (
+              <span className="bg-red-100 text-red-600 
+              px-4 py-1 rounded-full text-xs font-semibold">
+                Cancelled
+              </span>
+            ) : (
+              <img
+                onClick={() => cancelAppointment(appointment._id)}
+                src={assets.cancel_icon}
+                className="w-9 cursor-pointer hover:scale-110"
+              />
+            )}
+          </div>
+        ))}
+
       </div>
     </div>
-  );
+
+  </div>
+);
+
+
+
 };
 
 export default Dashboard;
 
 
-
-// import React from 'react'
-// import { useContext, useEffect } from 'react'
-// import { AdminContext } from '../../context/AdminContext'
-// import {assets} from '../../assets/assets'
-
-// const Dashboard = () => {
-
-//   const {getDashData,dashData,aToken,cancelAppointment} = useContext(AdminContext)
-//   useEffect(() => {
-//     if(aToken){
-//       getDashData()
-//     }
-//   }, [aToken])
-
-//   return dashData &&(
-//     <div className='m-5'>
-//       <div className='flex flex-wrap gap-3'>
-//         <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 trasition-all'>
-//           <img src={assets.doctor_icon} alt="" />
-//           <div>
-//             <p>{dashData.doctors}</p>
-//             <p>Doctors</p>
-//           </div>
-//         </div>
-
-//         <div>
-//           <img src={assets.appointment_icon} alt="" />
-//           <div>
-//             <p>{dashData.appointments}</p>
-//             <p>Appointments</p>
-//           </div>
-//         </div>
-
-//         <div>
-//           <img src={assets.patients_icon} alt="" />
-//           <div>
-//             <p>{dashData.patients}</p>
-//             <p>Patients</p>
-//           </div>
-//         </div>
-
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default Dashboard

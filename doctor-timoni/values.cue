@@ -31,15 +31,15 @@ values: {
 		servicePort: 4000
 		nodePort: 30001
 		secrets: {
-			MONGODB_URI: "mongodb+srv://yashparmar:Yash123@cluster0.d2gzp.mongodb.net/?appName=Cluster0"
-			CLOUDINARY_NAME: "dds4jtakg"
-			CLOUDINARY_API_KEY: "822672662942817"
-			CLOUDINARY_SECRET_KEY: "Iz_yBeI2YuNixbG58AQHzJ76BI4"
+			MONGODB_URI: "YOUR DATA"
+			CLOUDINARY_NAME: "YOUR DATA"
+			CLOUDINARY_API_KEY: "YOUR DATA"
+			CLOUDINARY_SECRET_KEY: "YOUR DATA"
 			ADMIN_EMAIL: "admin@prescripto.com"
 			ADMIN_PASSWORD: "admin123"
-			JWT_SECRET: "yashparmar"
-			RAZORPAY_KEY_ID: "rzp_test_uzQvuGj4XPgELb"
-			RAZORPAY_KEY_SECRET: "879gLC7rkLArz1w4UMFArAyM"
+			JWT_SECRET: "YOUR DATA"
+			RAZORPAY_KEY_ID: "YOUR DATA"
+			RAZORPAY_KEY_SECRET: "YOUR DATA"
 		}
 	}
 	frontend: {

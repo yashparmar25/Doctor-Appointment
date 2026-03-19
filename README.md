@@ -46,8 +46,8 @@ DevOps	Docker, Docker Compose
 
 Create .env file in root:
 
-MONGODB_URI= \n
-CLOUDINARY_NAME = \n
+MONGODB_URI= 
+CLOUDINARY_NAME = 
 CLOUDINARY_API_KEY = 
 CLOUDINARY_SECRET_KEY = 
 ADMIN_EMAIL = 

@@ -8,23 +8,25 @@ RUN npm install
 
 COPY . .
 
-
 # -------- Stage 2: Production --------
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install only prod deps
-COPY package*.json ./
-RUN npm install --omit=dev
+# install runtime deps only (if needed for native modules)
+RUN apk add --no-cache libc6-compat
 
-# Copy only required folders
+# copy node_modules from builder (🔥 avoids reinstall)
+COPY --from=builder /app/node_modules ./node_modules
+
+# copy app files
 COPY --from=builder /app/server.js ./
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/controllers ./controllers
 COPY --from=builder /app/middlewares ./middlewares
 COPY --from=builder /app/models ./models
 COPY --from=builder /app/routes ./routes
+COPY --from=builder /app/package*.json ./
 
 EXPOSE 4000
 

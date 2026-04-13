@@ -1,0 +1,123 @@
+name: Build → Harbor → Update Timoni (Digest Based)
+
+on:
+  push:
+    branches:
+      - prod
+      - beta
+      - dev
+
+env:
+  REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-push-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Checkout App Repo
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
+
+      # 🔐 Login to Harbor
+      - name: Login to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login $REGISTRY \
+          -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      # =========================
+      # 🏗 BUILD & PUSH IMAGES
+      # =========================
+
+      - name: Build & Push Frontend
+        run: |
+          docker build -f frontend/Dockerfile.frontend -t $REGISTRY/frontend:${IMAGE_TAG} ./frontend
+          docker push $REGISTRY/frontend:${IMAGE_TAG}
+
+      - name: Build & Push Backend
+        run: |
+          docker build -f backend/Dockerfile.backend -t $REGISTRY/backend:${IMAGE_TAG} ./backend
+          docker push $REGISTRY/backend:${IMAGE_TAG}
+
+      - name: Build & Push Admin
+        run: |
+          docker build -f admin/Dockerfile.admin -t $REGISTRY/admin:${IMAGE_TAG} ./admin
+          docker push $REGISTRY/admin:${IMAGE_TAG}
+
+      # =========================
+      # 📦 GET DIGESTS
+      # =========================
+
+      - name: Extract Image Digests
+        run: |
+          FRONTEND_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY/frontend:${IMAGE_TAG} | cut -d'@' -f2)
+          BACKEND_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY/backend:${IMAGE_TAG} | cut -d'@' -f2)
+          ADMIN_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY/admin:${IMAGE_TAG} | cut -d'@' -f2)
+
+          echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_ENV
+          echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_ENV
+          echo "ADMIN_DIGEST=$ADMIN_DIGEST" >> $GITHUB_ENV
+
+      # =========================
+      # 📥 CLONE TIMONI REPO
+      # =========================
+
+      - name: Clone Timoni Repo
+        run: |
+          git clone https://${{ secrets.GITOPS_TOKEN }}@github.com/yashparmar25/Doctor-Timoni.git
+
+      # =========================
+      # 🧠 SELECT ENV FILE
+      # =========================
+
+      - name: Select values file
+        id: envfile
+        run: |
+          BRANCH=${GITHUB_REF##*/}
+
+          if [ "$BRANCH" = "prod" ]; then
+            echo "FILE=values-prod.cue" >> $GITHUB_OUTPUT
+          elif [ "$BRANCH" = "beta" ]; then
+            echo "FILE=values-beta.cue" >> $GITHUB_OUTPUT
+          else
+            echo "FILE=values-dev.cue" >> $GITHUB_OUTPUT
+          fi
+
+      # =========================
+      # ✏️ UPDATE DIGEST (SAFE)
+      # =========================
+
+      - name: Update CUE values (digest-based)
+        run: |
+          cd Doctor-Timoni
+
+          FILE=${{ steps.envfile.outputs.FILE }}
+          echo "Updating $FILE"
+
+          # 🔹 FRONTEND
+          sed -i "/frontend:/,/}/ s|repository: .*|repository: \"${REGISTRY}/frontend\"|" $FILE
+          sed -i "/frontend:/,/}/ s|digest: .*|digest: \"${FRONTEND_DIGEST}\"|" $FILE
+
+          # 🔹 BACKEND
+          sed -i "/backend:/,/}/ s|repository: .*|repository: \"${REGISTRY}/backend\"|" $FILE
+          sed -i "/backend:/,/}/ s|digest: .*|digest: \"${BACKEND_DIGEST}\"|" $FILE
+
+          # 🔹 ADMIN
+          sed -i "/admin:/,/}/ s|repository: .*|repository: \"${REGISTRY}/admin\"|" $FILE
+          sed -i "/admin:/,/}/ s|digest: .*|digest: \"${ADMIN_DIGEST}\"|" $FILE
+
+      # =========================
+      # 📤 COMMIT & PUSH
+      # =========================
+
+      - name: Commit & Push Changes
+        run: |
+          cd Doctor-Timoni
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+          git commit -m "Update image digests for ${GITHUB_REF##*/} → ${IMAGE_TAG}" || echo "No changes"
+          git push

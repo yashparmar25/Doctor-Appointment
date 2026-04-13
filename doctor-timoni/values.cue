@@ -9,20 +9,18 @@ package main
 values: {
 	admin: {
 		image: {
-			repository: "yashparmar2055/doctorappoitment-admin"
+			repository: "yashparmar2055/doctor-admin"
 			tag:        "latest"
 			digest:     ""
 		}
 		replicas: 1
-		port: 5174
+		port: 80
+		servicePort: 80
 		nodePort: 32001
-		env: {
-			VITE_BACKEND_URL: "http://backend-service:4000"
-		}
 	}
 	backend: {
 		image: {
-			repository: "yashparmar2055/doctorappoitment-backend"
+			repository: "yashparmar2055/doctor-backend"
 			tag:        "latest"
 			digest:     ""
 		}
@@ -31,31 +29,30 @@ values: {
 		servicePort: 4000
 		nodePort: 30001
 		secrets: {
-			MONGODB_URI: "YOUR DATA"
-			CLOUDINARY_NAME: "YOUR DATA"
-			CLOUDINARY_API_KEY: "YOUR DATA"
-			CLOUDINARY_SECRET_KEY: "YOUR DATA"
+			MONGODB_URI: "mongodb+srv://yashparmar:Yash123@cluster0.d2gzp.mongodb.net/?appName=Cluster0"
+			CLOUDINARY_NAME: "dds4jtakg"
+			CLOUDINARY_API_KEY: "822672662942817"
+			CLOUDINARY_SECRET_KEY: "Iz_yBeI2YuNixbG58AQHzJ76BI4"
 			ADMIN_EMAIL: "admin@prescripto.com"
 			ADMIN_PASSWORD: "admin123"
-			JWT_SECRET: "YOUR DATA"
-			RAZORPAY_KEY_ID: "YOUR DATA"
-			RAZORPAY_KEY_SECRET: "YOUR DATA"
+			JWT_SECRET: "yashparmar"
+			RAZORPAY_KEY_ID: "rzp_test_uzQvuGj4XPgELb"
+			RAZORPAY_KEY_SECRET: "879gLC7rkLArz1w4UMFArAyM"
 		}
 	}
 	frontend: {
 		image: {
-			repository: "yashparmar2055/doctorappoitment-frontend"
+			repository: "yashparmar2055/doctor-frontned"
 			tag:        "latest"
 			digest:     ""
 		}
 		replicas: 2
-		port: 5173
+		port: 80
+		servicePort: 80
 		nodePort: 32000
-		env: {
-			VITE_BACKEND_URL: "http://backend-service:4000"
-		}
 		secrets: {
 			VITE_RAZORPAY_KEY_ID: "rzp_test_uzQvuGj4XPgELb"
+			VITE_BACKEND_URL: "http://backend-service:4000"
 		}
 	}
 }

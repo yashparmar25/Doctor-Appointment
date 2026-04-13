@@ -8,5 +8,5 @@ spec:
     app: admin
   ports:
     - port: 80
-      targetPort: 5174
+      targetPort: 80
       nodePort: 32001

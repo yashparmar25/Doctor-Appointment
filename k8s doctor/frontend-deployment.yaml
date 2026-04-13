@@ -16,10 +16,8 @@ spec:
       - name: frontend
         image: yashparmar2055/doctorappoitment-frontend
         ports:
-        - containerPort: 5173
+        - containerPort: 80
         env:
-        - name: VITE_BACKEND_URL
-          value: "http://backend-service:4000"
         - name: VITE_RAZORPAY_KEY_ID
           valueFrom:
             secretKeyRef:

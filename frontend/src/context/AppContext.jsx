@@ -10,7 +10,7 @@ const AppContextProvider = (props) => {
     const [token,setToken] = useState(localStorage.getItem('token')? localStorage.getItem('token') : null);
     const [userData,setUserData] =useState(false)
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL === undefined || import.meta.env.VITE_BACKEND_URL === 'undefined' ? '' : import.meta.env.VITE_BACKEND_URL;
 
     
 

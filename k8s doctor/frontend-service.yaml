@@ -8,5 +8,5 @@ spec:
     app: frontend
   ports:
     - port: 80
-      targetPort: 5173
+      targetPort: 80
       nodePort: 32000

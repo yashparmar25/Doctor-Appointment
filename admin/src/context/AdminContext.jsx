@@ -11,8 +11,7 @@ const AdminContextProvider = ({ children }) => {
   const [appointments, setAppointment] = useState([])
   const [dashData, setDashData] = useState(false);
 
-  // Load backend URL from environment variables
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL === undefined || import.meta.env.VITE_BACKEND_URL === 'undefined' ? '' : import.meta.env.VITE_BACKEND_URL;
 
   const getAllDoctors = async () => {
     try {

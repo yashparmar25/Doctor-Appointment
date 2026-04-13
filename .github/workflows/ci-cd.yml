@@ -23,7 +23,7 @@ jobs:
       # 🔐 Login to Harbor
       - name: Login to Harbor
         run: |
-          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login $REGISTRY \
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login \
           -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       # =========================

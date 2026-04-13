@@ -32,18 +32,18 @@ jobs:
 
       - name: Build & Push Frontend
         run: |
-          docker build -f frontend/Dockerfile.frontend -t $REGISTRY/frontend:${IMAGE_TAG} ./frontend
-          docker push $REGISTRY/frontend:${IMAGE_TAG}
+          docker build -f frontend/Dockerfile.frontend -t yashparmar2055/frontend:${IMAGE_TAG} ./frontend
+          docker push yashparmar2055/frontend:${IMAGE_TAG}
 
       - name: Build & Push Backend
         run: |
-          docker build -f backend/Dockerfile.backend -t $REGISTRY/backend:${IMAGE_TAG} ./backend
-          docker push $REGISTRY/backend:${IMAGE_TAG}
+          docker build -f backend/Dockerfile.backend -t yashparmar2055/backend:${IMAGE_TAG} ./backend
+          docker push yashparmar2055/backend:${IMAGE_TAG}
 
       - name: Build & Push Admin
         run: |
-          docker build -f admin/Dockerfile.admin -t $REGISTRY/admin:${IMAGE_TAG} ./admin
-          docker push $REGISTRY/admin:${IMAGE_TAG}
+          docker build -f admin/Dockerfile.admin -t yashparmar2055/admin:${IMAGE_TAG} ./admin
+          docker pushyashparmar2055/admin:${IMAGE_TAG}
 
       # =========================
       # 📦 GET DIGESTS
@@ -96,15 +96,15 @@ jobs:
           echo "Updating $FILE"
 
           # 🔹 FRONTEND
-          sed -i "/frontend:/,/}/ s|repository: .*|repository: \"${REGISTRY}/frontend\"|" $FILE
+          sed -i "/frontend:/,/}/ s|repository: .*|repository: \"yashparmar2055/frontend\"|" $FILE
           sed -i "/frontend:/,/}/ s|digest: .*|digest: \"${FRONTEND_DIGEST}\"|" $FILE
 
           # 🔹 BACKEND
-          sed -i "/backend:/,/}/ s|repository: .*|repository: \"${REGISTRY}/backend\"|" $FILE
+          sed -i "/backend:/,/}/ s|repository: .*|repository: \"yashparmar2055/backend\"|" $FILE
           sed -i "/backend:/,/}/ s|digest: .*|digest: \"${BACKEND_DIGEST}\"|" $FILE
 
           # 🔹 ADMIN
-          sed -i "/admin:/,/}/ s|repository: .*|repository: \"${REGISTRY}/admin\"|" $FILE
+          sed -i "/admin:/,/}/ s|repository: .*|repository: \"yashparmar2055/admin\"|" $FILE
           sed -i "/admin:/,/}/ s|digest: .*|digest: \"${ADMIN_DIGEST}\"|" $FILE
 
       # =========================

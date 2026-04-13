@@ -43,7 +43,7 @@ jobs:
       - name: Build & Push Admin
         run: |
           docker build -f admin/Dockerfile.admin -t yashparmar2055/admin:${IMAGE_TAG} ./admin
-          docker pushyashparmar2055/admin:${IMAGE_TAG}
+          docker push yashparmar2055/admin:${IMAGE_TAG}
 
       # =========================
       # 📦 GET DIGESTS

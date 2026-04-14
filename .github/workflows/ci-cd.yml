@@ -1,11 +1,8 @@
-name: Build → Harbor → Update Timoni (Digest Based)
+name: CI/CD Pipeline (Doctor App → Harbor → Timoni)
 
 on:
   push:
-    branches:
-      - prod
-      - beta
-      - dev
+    branches: [ "prod", "beta", "dev" ]
 
 env:
   REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
@@ -16,130 +13,131 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 📥 Checkout App Repo
-    - name: Checkout App Repo
-      uses: actions/checkout@v4
+      # 📥 Checkout App Repo
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
 
-    # 🔧 Setup Docker Buildx
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      # 🌍 Set Environment Name
+      - name: Set Environment Variables
+        run: |
+          echo "ENV_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
 
-    # 🔐 Login to Harbor
-    - name: Login to Harbor
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ secrets.HARBOR_USERNAME }}
-        password: ${{ secrets.HARBOR_PASSWORD }}
+      # 🔧 Setup Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    # =========================
-    # 🏗 BUILD & PUSH IMAGES
-    # =========================
+      # 🔐 Login to Harbor
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
 
-    # 🔹 FRONTEND
-    - name: Build & Push Frontend
-      id: frontend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./frontend
-        file: ./frontend/Dockerfile.frontend
-        push: true
-        tags: ${{ env.REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
+      # =========================
+      # 🏗 BUILD & PUSH IMAGES
+      # =========================
 
-    # 🔹 BACKEND
-    - name: Build & Push Backend
-      id: backend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile.backend
-        push: true
-        tags: ${{ env.REGISTRY }}/backend:${{ env.IMAGE_TAG }}
+      # 🔹 FRONTEND
+      - name: Build & Push Frontend
+        id: frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}:latest
 
-    # 🔹 ADMIN
-    - name: Build & Push Admin
-      id: admin
-      uses: docker/build-push-action@v5
-      with:
-        context: ./admin
-        file: ./admin/Dockerfile.admin
-        push: true
-        tags: ${{ env.REGISTRY }}/admin:${{ env.IMAGE_TAG }}
+      # 🔹 BACKEND
+      - name: Build & Push Backend
+        id: backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}:latest
 
-    # =========================
-    # 📦 GET DIGESTS (🔥 FIXED)
-    # =========================
+      # 🔹 ADMIN
+      - name: Build & Push Admin
+        id: admin
+        uses: docker/build-push-action@v5
+        with:
+          context: ./admin
+          file: ./admin/Dockerfile.admin
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}:latest
 
-    - name: Export Digests
-      run: |
-        echo "FRONTEND_DIGEST=${{ steps.frontend.outputs.digest }}" >> $GITHUB_ENV
-        echo "BACKEND_DIGEST=${{ steps.backend.outputs.digest }}" >> $GITHUB_ENV
-        echo "ADMIN_DIGEST=${{ steps.admin.outputs.digest }}" >> $GITHUB_ENV
+      # =========================
+      # 📦 EXPORT DIGESTS
+      # =========================
 
-        echo "Frontend Digest: ${{ steps.frontend.outputs.digest }}"
-        echo "Backend Digest: ${{ steps.backend.outputs.digest }}"
-        echo "Admin Digest: ${{ steps.admin.outputs.digest }}"
+      - name: Export Digests
+        run: |
+          echo "FRONTEND_DIGEST=${{ steps.frontend.outputs.digest }}" >> $GITHUB_ENV
+          echo "BACKEND_DIGEST=${{ steps.backend.outputs.digest }}" >> $GITHUB_ENV
+          echo "ADMIN_DIGEST=${{ steps.admin.outputs.digest }}" >> $GITHUB_ENV
 
-    # =========================
-    # 📥 CLONE TIMONI REPO
-    # =========================
+      # =========================
+      # 📥 Checkout GitOps Repo
+      # =========================
 
-    - name: Clone Timoni Repo
-      run: |
-        git clone https://${{ secrets.GITOPS_TOKEN }}@github.com/yashparmar25/Doctor-Timoni.git
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          repository: yashparmar25/Doctor-Timoni
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops-repo
 
-    # =========================
-    # 🧠 SELECT ENV FILE
-    # =========================
+      # =========================
+      # ✏️ UPDATE DIGESTS
+      # =========================
 
-    - name: Select values file
-      id: envfile
-      run: |
-        BRANCH=${GITHUB_REF##*/}
-        if [ "$BRANCH" = "prod" ]; then
-          echo "FILE=values-prod.cue" >> $GITHUB_OUTPUT
-        elif [ "$BRANCH" = "beta" ]; then
-          echo "FILE=values-beta.cue" >> $GITHUB_OUTPUT
-        else
-          echo "FILE=values-dev.cue" >> $GITHUB_OUTPUT
-        fi
+      - name: Update Digest in Timoni Values
+        run: |
+          cd gitops-repo
 
-    # =========================
-    # ✏️ UPDATE DIGEST (SAFE)
-    # =========================
+          TARGET_FILE="values-${{ env.ENV_NAME }}.cue"
 
-    - name: Update CUE values
-      run: |
-        cd Doctor-Timoni
-        FILE=${{ steps.envfile.outputs.FILE }}
+          echo "Updating $TARGET_FILE"
 
-        echo "Updating $FILE"
+          # 🔹 FRONTEND
+          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/frontend:/,/}/ s|digest:.*|digest: \"${FRONTEND_DIGEST}\"|g" $TARGET_FILE
+          sed -i "/frontend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
-        # 🔹 FRONTEND
-        sed -i "/frontend:/,/}/ s|repository: .*|repository: \"${{ env.REGISTRY }}/frontend\"|" $FILE
-        sed -i "/frontend:/,/}/ s|digest: .*|digest: \"${FRONTEND_DIGEST}\"|" $FILE
+          # 🔹 BACKEND
+          sed -i "/backend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/backend:/,/}/ s|digest:.*|digest: \"${BACKEND_DIGEST}\"|g" $TARGET_FILE
+          sed -i "/backend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
-        # 🔹 BACKEND
-        sed -i "/backend:/,/}/ s|repository: .*|repository: \"${{ env.REGISTRY }}/backend\"|" $FILE
-        sed -i "/backend:/,/}/ s|digest: .*|digest: \"${BACKEND_DIGEST}\"|" $FILE
+          # 🔹 ADMIN
+          sed -i "/admin:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/admin:/,/}/ s|digest:.*|digest: \"${ADMIN_DIGEST}\"|g" $TARGET_FILE
+          sed -i "/admin:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
-        # 🔹 ADMIN
-        sed -i "/admin:/,/}/ s|repository: .*|repository: \"${{ env.REGISTRY }}/admin\"|" $FILE
-        sed -i "/admin:/,/}/ s|digest: .*|digest: \"${ADMIN_DIGEST}\"|" $FILE
+      # =========================
+      # 📤 COMMIT & PUSH
+      # =========================
 
-        echo "Updated file preview:"
-        cat $FILE
+      - name: Commit & Push Changes
+        run: |
+          cd gitops-repo
 
-    # =========================
-    # 📤 COMMIT & PUSH
-    # =========================
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Commit & Push Changes
-      run: |
-        cd Doctor-Timoni
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
+          git add .
 
-        git add .
-        git commit -m "Update image digests for ${GITHUB_REF##*/} → ${IMAGE_TAG}" || echo "No changes"
-        git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(${{ env.ENV_NAME }}): doctor app digest update → ${{ env.IMAGE_TAG }}"
+            git push
+          fi

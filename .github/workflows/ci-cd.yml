@@ -47,8 +47,8 @@ jobs:
           file: ./frontend/Dockerfile.frontend
           push: true
           tags: |
-            13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/doctor/doc-frotnend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/doctor/doc-frontend-${{ env.ENV_NAME }}:latest
 
       # 🔹 BACKEND
       - name: Build & Push Backend
@@ -59,8 +59,8 @@ jobs:
           file: ./backend/Dockerfile.backend
           push: true
           tags: |
-            13.200.24.3/doctor/backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            13.200.24.3/doctor/backend-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/doctor/doc-backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/doctor/doc-backend-${{ env.ENV_NAME }}:latest
 
       # 🔹 ADMIN
       - name: Build & Push Admin
@@ -71,8 +71,8 @@ jobs:
           file: ./admin/Dockerfile.admin
           push: true
           tags: |
-            13.200.24.3/doctor/admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            13.200.24.3/doctor/admin-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/doctor/doc-admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/doctor/doc-admin-${{ env.ENV_NAME }}:latest
 
       # =========================
       # 📦 EXPORT DIGESTS
@@ -108,17 +108,17 @@ jobs:
           echo "Updating $TARGET_FILE"
 
           # 🔹 FRONTEND
-          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/doctor/doc-frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/frontend:/,/}/ s|digest:.*|digest: \"${FRONTEND_DIGEST}\"|g" $TARGET_FILE
           sed -i "/frontend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
           # 🔹 BACKEND
-          sed -i "/backend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/backend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/doctor/doc-backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/backend:/,/}/ s|digest:.*|digest: \"${BACKEND_DIGEST}\"|g" $TARGET_FILE
           sed -i "/backend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
           # 🔹 ADMIN
-          sed -i "/admin:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/admin:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/doctor/doc-admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/admin:/,/}/ s|digest:.*|digest: \"${ADMIN_DIGEST}\"|g" $TARGET_FILE
           sed -i "/admin:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 

@@ -5,12 +5,12 @@ on:
     branches: [ "prod", "beta", "dev" ]
 
 env:
-  REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
+  REGISTRY: 13.200.24.3
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build-push-update:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       # 📥 Checkout App Repo
@@ -30,7 +30,7 @@ jobs:
       - name: Login to Harbor
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: 13.200.24.3
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
@@ -47,8 +47,8 @@ jobs:
           file: ./frontend/Dockerfile.frontend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}:latest
 
       # 🔹 BACKEND
       - name: Build & Push Backend
@@ -59,8 +59,8 @@ jobs:
           file: ./backend/Dockerfile.backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/backend-${{ env.ENV_NAME }}:latest
 
       # 🔹 ADMIN
       - name: Build & Push Admin
@@ -71,8 +71,8 @@ jobs:
           file: ./admin/Dockerfile.admin
           push: true
           tags: |
-            ${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}:latest
+            13.200.24.3/doctor/admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
+            13.200.24.3/doctor/admin-${{ env.ENV_NAME }}:latest
 
       # =========================
       # 📦 EXPORT DIGESTS
@@ -108,19 +108,22 @@ jobs:
           echo "Updating $TARGET_FILE"
 
           # 🔹 FRONTEND
-          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/frontend:/,/}/ s|digest:.*|digest: \"${FRONTEND_DIGEST}\"|g" $TARGET_FILE
           sed -i "/frontend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
           # 🔹 BACKEND
-          sed -i "/backend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/backend:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/backend:/,/}/ s|digest:.*|digest: \"${BACKEND_DIGEST}\"|g" $TARGET_FILE
           sed -i "/backend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
 
           # 🔹 ADMIN
-          sed -i "/admin:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
+          sed -i "/admin:/,/}/ s|repository:.*|repository: \"13.200.24.3/doctor/admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
           sed -i "/admin:/,/}/ s|digest:.*|digest: \"${ADMIN_DIGEST}\"|g" $TARGET_FILE
           sed -i "/admin:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
+
+          echo "Preview:"
+          cat $TARGET_FILE
 
       # =========================
       # 📤 COMMIT & PUSH
@@ -130,8 +133,8 @@ jobs:
         run: |
           cd gitops-repo
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "Yash Parmar"
+          git config user.email "yashparmar2055@gmail.com"
 
           git add .
 

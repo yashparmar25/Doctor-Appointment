@@ -125,7 +125,7 @@ const DoctorProfile = () => {
         </div>
 
         <div>
-          <p className='text-sm text-gray-600 mb-1'>Address</p>
+          <p className='text-sm text-gray-600 mb-1'>Addresss</p>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <input placeholder='Line 1' name='line1' value={profile.address?.line1 || ''} onChange={handleAddressChange} className='w-full border rounded p-2' />
             <input placeholder='Line 2' name='line2' value={profile.address?.line2 || ''} onChange={handleAddressChange} className='w-full border rounded p-2' />

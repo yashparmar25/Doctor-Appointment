@@ -9,21 +9,24 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  build-push-update:
+  # ==========================================
+  # STAGE 1: Build & Push Images
+  # ==========================================
+  build-and-push:
     runs-on: self-hosted
-
+    outputs:
+      frontend_digest: ${{ steps.frontend.outputs.digest }}
+      backend_digest: ${{ steps.backend.outputs.digest }}
+      admin_digest: ${{ steps.admin.outputs.digest }}
+      env_name: ${{ steps.vars.outputs.env_name }}
     steps:
-      # 📥 Checkout App Repo
       - name: Checkout App Repo
         uses: actions/checkout@v4
 
-      # 🌍 Set Environment Name
-      - name: Set Environment Variables
-        run: |
-          echo "ENV_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Set Environment Name
+        id: vars
+        run: echo "env_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
-      # 🔧 Setup Docker Buildx
-      # This configuration allows Buildx to push to an insecure (HTTP) registry
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -33,8 +36,6 @@ jobs:
               http = true
               insecure = true
 
-      # 🔐 Login to Harbor
-      # Note: Use http if you haven't configured SSL for Harbor yet
       - name: Login to Harbor
         uses: docker/login-action@v3
         with:
@@ -42,11 +43,6 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
-      # =========================
-      # 🏗 BUILD & PUSH IMAGES
-      # =========================
-
-      # 🔹 FRONTEND
       - name: Build & Push Frontend
         id: frontend
         uses: docker/build-push-action@v5
@@ -54,11 +50,8 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile.frontend
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/doctor/doc-frontend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/doc-frontend-${{ env.ENV_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/doctor/${{ github.ref_name }}/doc-frontend-${{ github.ref_name }}:${{ env.IMAGE_TAG }}
 
-      # 🔹 BACKEND
       - name: Build & Push Backend
         id: backend
         uses: docker/build-push-action@v5
@@ -66,11 +59,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile.backend
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/doctor/doc-backend-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/doc-backend-${{ env.ENV_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/doctor/${{ github.ref_name }}/doc-backend-${{ github.ref_name }}:${{ env.IMAGE_TAG }}
 
-      # 🔹 ADMIN
       - name: Build & Push Admin
         id: admin
         uses: docker/build-push-action@v5
@@ -78,24 +68,15 @@ jobs:
           context: ./admin
           file: ./admin/Dockerfile.admin
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/doctor/doc-admin-${{ env.ENV_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/doctor/doc-admin-${{ env.ENV_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/doctor/${{ github.ref_name }}/doc-admin-${{ github.ref_name }}:${{ env.IMAGE_TAG }}
 
-      # =========================
-      # 📦 EXPORT DIGESTS
-      # =========================
-
-      - name: Export Digests
-        run: |
-          echo "FRONTEND_DIGEST=${{ steps.frontend.outputs.digest }}" >> $GITHUB_ENV
-          echo "BACKEND_DIGEST=${{ steps.backend.outputs.digest }}" >> $GITHUB_ENV
-          echo "ADMIN_DIGEST=${{ steps.admin.outputs.digest }}" >> $GITHUB_ENV
-
-      # =========================
-      # 📥 Checkout GitOps Repo
-      # =========================
-
+  # ==========================================
+  # STAGE 2: Update GitOps Configuration
+  # ==========================================
+  update-gitops:
+    runs-on: self-hosted
+    needs: build-and-push # Ensures this only runs if Stage 1 succeeds
+    steps:
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
@@ -103,49 +84,35 @@ jobs:
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops-repo
 
-      # =========================
-      # ✏️ UPDATE DIGESTS
-      # =========================
-
-      - name: Update Digest in Timoni Values
+      - name: Update Timoni Values
         run: |
           cd gitops-repo
-          TARGET_FILE="values-${{ env.ENV_NAME }}.cue"
+          ENV="${{ needs.build-and-push.outputs.env_name }}"
+          TARGET_FILE="values-${ENV}.cue"
           
-          echo "Updating $TARGET_FILE"
+          FE_DIGEST="${{ needs.build-and-push.outputs.frontend_digest }}"
+          BE_DIGEST="${{ needs.build-and-push.outputs.backend_digest }}"
+          AD_DIGEST="${{ needs.build-and-push.outputs.admin_digest }}"
 
-          # 🔹 Update Frontend
-          sed -i "/frontend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/doc-frontend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
-          sed -i "/frontend:/,/}/ s|digest:.*|digest: \"${FRONTEND_DIGEST}\"|g" $TARGET_FILE
-          sed -i "/frontend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
+          echo "Updating $TARGET_FILE with digests..."
 
-          # 🔹 Update Backend
-          sed -i "/backend:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/doc-backend-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
-          sed -i "/backend:/,/}/ s|digest:.*|digest: \"${BACKEND_DIGEST}\"|g" $TARGET_FILE
-          sed -i "/backend:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
-
-          # 🔹 Update Admin
-          sed -i "/admin:/,/}/ s|repository:.*|repository: \"${{ env.REGISTRY }}/doctor/doc-admin-${{ env.ENV_NAME }}\"|g" $TARGET_FILE
-          sed -i "/admin:/,/}/ s|digest:.*|digest: \"${ADMIN_DIGEST}\"|g" $TARGET_FILE
-          sed -i "/admin:/,/}/ s|tag:.*|tag: \"\"|g" $TARGET_FILE
-
-          echo "Preview of $TARGET_FILE:"
-          cat $TARGET_FILE
-
-      # =========================
-      # 📤 COMMIT & PUSH
-      # =========================
+          # Frontend Update
+          sed -i "/frontend:/,/}/ s|digest:.*|digest: \"${FE_DIGEST}\"|g" $TARGET_FILE
+          # Backend Update
+          sed -i "/backend:/,/}/ s|digest:.*|digest: \"${BE_DIGEST}\"|g" $TARGET_FILE
+          # Admin Update
+          sed -i "/admin:/,/}/ s|digest:.*|digest: \"${AD_DIGEST}\"|g" $TARGET_FILE
 
       - name: Commit & Push Changes
         run: |
           cd gitops-repo
-          git config user.name "Yash Parmar"
+          git config user.name "Yash Parmar CI"
           git config user.email "yashparmar2055@gmail.com"
           git add .
-
+          
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore(${{ env.ENV_NAME }}): doctor app digest update → ${{ env.IMAGE_TAG }}"
+            git commit -m "chore(${{ github.ref_name }}): update image digests to ${{ env.IMAGE_TAG }}"
             git push
           fi

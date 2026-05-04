@@ -5,7 +5,7 @@ on:
     branches: [ "prod", "beta", "dev" ]
 
 env:
-  REGISTRY: 13.200.24.3
+  REGISTRY: YOUR_IP
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
